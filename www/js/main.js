@@ -1,16 +1,23 @@
 "use strict";
-// NO USAR: import Alpine from 'alpinejs'
+// Variables globales
 var money = 1000;
+var ww = $(window).width();
+var wh = $(window).height();
 document.addEventListener('alpine:init', () => {
     Alpine.data('mnpg', () => ({
-        cash: "💵$:" + money
+        cash: "💵$: " + money,
+        dev: true
     }));
+    setTimeout(() => {
+        curtain();
+    }, 3000);
 });
-// --- Cordova Initialization ---
-document.addEventListener('deviceready', onDeviceReady, false);
-function onDeviceReady() {
-    // Cordova is now initialized. Have fun!
-    console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
-    // Alpine.js is already initialized by its own event listener,
-    // so you can now safely use Cordova plugins or APIs.
+function curtain() {
+    $.mobile.changePage('#main', { transition: "slideup" });
+    alert("Hola de nuevo");
 }
+// Inicialización de Stage y Eventos
+const app = new Stage({
+    canvas: document.getElementById("canva")
+});
+app.viewbox(ww, wh, (mode = "in-pad"));

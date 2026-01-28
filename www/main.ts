@@ -1,25 +1,31 @@
-
-// NO USAR: import Alpine from 'alpinejs'
-var money: number = 1000
-// Definimos las variables para que TS no se queje de que no existen
+// Variables globales
+var money: number = 1000;
+var ww: number = $(window).width()
+var wh: number = $(window).height();
+// Declaraciones para evitar errores de TS
 declare var $: any;
 declare var Alpine: any;
-declare var cordova: any; // Added for Cordova
+declare var Stage: any;
+declare var mode: any;
+declare var transition: any;
 
 document.addEventListener('alpine:init', () => {
-  Alpine.data('mnpg', () => ({
-    cash: "💵$:" + money
-  }))
-})
+    Alpine.data('mnpg', () => ({
+        cash: "💵$: " + money,
+        dev: true
+    }));
+    setTimeout(() => {
+        curtain()
+    }, 3000)
+});
 
-
-// --- Cordova Initialization ---
-document.addEventListener('deviceready', onDeviceReady, false);
-
-function onDeviceReady() {
-    // Cordova is now initialized. Have fun!
-    console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
-
-    // Alpine.js is already initialized by its own event listener,
-    // so you can now safely use Cordova plugins or APIs.
+function curtain(){
+    $.mobile.changePage('#main',{transition: "slideup"})
+    alert("Hola de nuevo")
 }
+
+// Inicialización de Stage y Eventos
+const app = new Stage({
+    canvas: document.getElementById("canva")
+});
+app.viewbox(ww,wh, (mode = "in-pad"))

@@ -6,14 +6,21 @@
   <title>Hello World</title>
   <script defer src="cdn/cdn.min.js"></script>
   <script src="cdn/jquery.js"></script>
-  <script src="cdn/semantic.min.js"></script>
   <script src="cdn/jquery.mobile-1.3.2.min.js"></script>
+  <script src="cdn/semantic.min.js"></script>
+  <script src="cdn/stage.js"></script>
   <link rel="stylesheet" href="cdn/jquery.mobile.structure-1.3.2.min.css">
   <link rel="stylesheet" href="cdn/jquery.mobile.theme-1.3.2.min.css">
   <link rel="stylesheet" href="cdn/jquery.mobile-1.3.2.min.css">
   <link rel="stylesheet" href="cdn/semantic.min.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div data-role="page" style="height: 100vh; width: 100%; padding: 0;" x-data="mnpg" id="curtain">
+    <div data-role="content" data-theme="a" style="height: 100vh; width: 100%; text-align: center; display: flex; justify-content: center; align-items: center;">
+      <img src="assets/Pol_logo.svg" width="300px" height="300px">
+    </div>
+  </div>
   <!-- Main Page -->
   <div x-data="mnpg" data-role="page" id="main">
     <div data-role="header" style="display: flex; justify-content: space-around; align-items: center;">
@@ -23,26 +30,29 @@
         <a class="ui icon green button"><i class="plus icon"></i></a>
       </div>
     </div>
-    <div data-role="content">
-        <p>This is the main page.</p>
-        <a href="#test-page" data-role="button" data-transition="slide">Go to Test Page</a>
+    <div class="canva-conta" data-role="content">
+      <canva id="canva"></canva>
+      <p x-show="dev">This is the main page.</p>
+      <a x-show="dev" href="#test-page" data-role="button" data-transition="slidefade" class="espacial">Go to Test Page</a>
+    </div>
+    <div data-role="footer" style="display: flex; justify-content: space-around; align-items: center;">
+      hi
     </div>
   </div>
 
   <!-- Test Page -->
   <div data-role="page" id="test-page">
-      <div data-role="header">
-          <a href="#main" data-role="button" data-icon="back">Back</a>
-          <h1>Test Page</h1>
-      </div>
-      <div data-role="content">
-          <p>Click the button to test the event listener.</p>
-          <button id="myButton">Test Button</button>
-      </div>
+    <div data-role="header">
+      <a href="#main" data-role="button" data-icon="back">Back</a>
+      <h1>Test Page</h1>
+    </div>
+    <div data-role="content">
+      <p>Click the button to test the event listener.</p>
+      <button id="myButton">Test Button</button>
+    </div>
   </div>
 
-  <!-- Essential Cordova and App Scripts -->
-  <script src="cordova.js"></script>
+  <!-- Essential App Scripts -->
   <script src="js/main.js"></script>
 </body>
 </html>

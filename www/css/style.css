@@ -1,4 +1,3 @@
-
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 20px;
@@ -8,15 +7,48 @@ body {
     user-select: none;
 }
 
-h1 {
+*,
+html {
+    transition: all 0.2s ease-in !important;
+}
+/* Quita los márgenes que JQM pone por defecto en el contenido */
+.ui-content {
+    margin: 0 !important;
+    overflow: auto !important;
+    display: flex;
+    flex-direction: column;
+}
+.canva-conta{
+    padding: 0;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+}
+/* Asegura que el canvas ocupe todo el espacio que fs() le da */
+#canva {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #222; /* Para que veas si el área está ahí */
+}
+
+.espacial {
+    background: linear-gradient(#000, #122) padding-box, linear-gradient(80deg, #000, #0fb) border-box;
+    border: 2px solid transparent;
+    color: #fff !important;
+    corner-shape: squircle;
+    border-radius: 30px;
+}
+
+.blue-h1 {
     color: #0c7aed;
     font-size: 24px;
     font-weight: 600;
 }
 
-p {
+.parrf {
     font-size: 16px;
-    line-height: 1.5;
+    line-height: 1.5px;
 }
 
 /* Basic button styling */

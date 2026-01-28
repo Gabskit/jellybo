@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Grafika (https://www.grafika.cc/) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="1024" viewBox="0 0 2560.57421875 2281.448242188" preserveAspectRatio="xMidYMid meet">
+	<defs>
+		<linearGradient gradientUnits="userSpaceOnUse" gradientTransform="matrix(-279.0285339355469, 279.0282897949219, -279.0282897949219, -279.0285339355469, 279.0285339355469, -279.0283203125)" spreadMethod="pad" id="gradient_1" x1="-1" y1="0" x2="1" y2="0">
+			<stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.122" />
+			<stop offset="100%" stop-color="#FFFFFF" stop-opacity="1" />
+		</linearGradient>
+		<filter id="filter_1" style="color-interpolation-filters:sRGB" primitiveUnits="userSpaceOnUse" x="-0.02" y="-0.02" width="1.04" height="1.04">
+			<feGaussianBlur in="SourceGraphic" stdDeviation="2.8094" />
+		</filter>
+		<linearGradient gradientUnits="userSpaceOnUse" gradientTransform="matrix(279.0278015136719, -279.0283203125, 279.0283203125, 279.0278015136719, -279.0278625488281, 279.0282897949219)" spreadMethod="pad" id="gradient_2" x1="-1" y1="0" x2="1" y2="0">
+			<stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.122" />
+			<stop offset="100%" stop-color="#FFFFFF" stop-opacity="1" />
+		</linearGradient>
+		<filter id="filter_2" style="color-interpolation-filters:sRGB" primitiveUnits="userSpaceOnUse" x="-0.02" y="-0.02" width="1.04" height="1.04">
+			<feGaussianBlur in="SourceGraphic" stdDeviation="2.8094" />
+		</filter>
+		<filter id="filter_3" style="color-interpolation-filters:sRGB" primitiveUnits="userSpaceOnUse" x="-0.018" y="-0.02" width="1.037" height="1.039">
+			<feGaussianBlur in="SourceGraphic" stdDeviation="3.38675" />
+		</filter>
+	</defs>
+	<g transform="matrix(1, 0, 0, 1, 1509.397216796875, 1621.1708984375)">
+		<path d="M1026.56628418,-1038.503540039 C1026.56628418,-730.297302246 776.715820313,-480.446777344 468.509552002,-480.446777344 C160.303314209,-480.446777344 -89.547210693,-730.297302246 -89.547210693,-1038.503540039 C-89.547210693,-1346.709716797 160.303314209,-1596.560302734 468.509552002,-1596.560302734 C776.715820313,-1596.560302734 1026.56628418,-1346.709716797 1026.56628418,-1038.503540039 Z" style="fill:none;stroke:url(#gradient_1);stroke-linecap:round;stroke-linejoin:round;stroke-width:37.096775055;stroke-dasharray:90 90;filter:url(#filter_1)" />
+		<path d="M-368.673095703,77.609985352 C-368.673095703,385.816223145 -618.523620605,635.666748047 -926.729858398,635.666748047 C-1234.936035156,635.666748047 -1484.786621094,385.816223145 -1484.786621094,77.609985352 C-1484.786621094,-230.596252441 -1234.936035156,-480.446777344 -926.729858398,-480.446777344 C-618.523620605,-480.446777344 -368.673095703,-230.596252441 -368.673095703,77.609985352 Z" style="fill:none;stroke:url(#gradient_2);stroke-linecap:round;stroke-linejoin:round;stroke-width:37.096775055;stroke-dasharray:90 100;filter:url(#filter_2)" />
+		<path d="M-89.547241211,-1038.503540039 C-89.547241211,-798.589538574 88.563751221,-511.35357666 395.481445313,-485.182006836 Q-229.110168457,-480.446777344 -365.096252441,159.594909668 C-336.874664307,-215.465927124 -577.994567871,-426.960601807 -878.386962891,-484.561920166 Q-229.110168457,-480.446777344 -89.547241211,-1038.503540039 Z" fill-rule="evenodd" style="fill:#FFFFFF;stroke:#FFFFFF;stroke-linecap:round;stroke-linejoin:round;stroke-width:37.096775055;filter:url(#filter_3)" />
+	</g>
+</svg>
