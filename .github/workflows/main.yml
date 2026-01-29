@@ -33,13 +33,17 @@ jobs:
         run: |
           npx cap sync android
           cd android
-          # Aseguramos que el wrapper tenga permisos
-          # 1. BORRADO TOTAL de caches previos en el runner
-          rm -rf ~/.gradle/caches/
-          sed -i '/dependencies {/a \    constraints {\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22") { because("kotlin-stdlib handles this now") }\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22") { because("kotlin-stdlib handles this now") }\n    }' app/build.gradle'}'
-          sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' variables.gradle
-          sed -i 's/targetSdkVersion = .*/targetSdkVersion = 35/g' variables.gradle
+          # 1. FIX CLASES DUPLICADAS
+          # Usamos un comando más simple para inyectar las restricciones al inicio del archivo
+          echo 'configurations.all { resolutionStrategy { force "org.jetbrains.kotlin:kotlin-stdlib:1.8.22" } }' > temp_fix.gradle
+          cat temp_fix.gradle app/build.gradle > app/build.gradle.new && mv app/build.gradle.new app/build.gradle
 
+          # 2. ACTUALIZAR SDK Y GRADLE
+          # Usamos el condicional || true para que no falle si el archivo no existe
+          [ -f variables.gradle ] && sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' variables.gradle || true
+          [ -f variables.gradle ] && sed -i 's/targetSdkVersion = .*/targetSdkVersion = 35/g' variables.gradle || true
+                                                                                          
+          sed -i 's/gradle-.*-all.zip/gradle-8.5-all.zip/g' gradle/wrapper/gradle-wrapper.properties
           # FORZAR GRADLE 8.5 (Cambiamos el archivo directamente en el server)
           sed -i 's/gradle-.*-all.zip/gradle-8.5-all.zip/g' gradle/wrapper/gradle-wrapper.properties
                                                             
