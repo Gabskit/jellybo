@@ -33,11 +33,13 @@ jobs:
         run: |
           npx cap sync android
           cd android
-          # 1. FIX CLASES DUPLICADAS
-          # Usamos un comando más simple para inyectar las restricciones al inicio del archivo
-          echo 'configurations.all { resolutionStrategy { force "org.jetbrains.kotlin:kotlin-stdlib:1.8.22" } }' > temp_fix.gradle
-          cat temp_fix.gradle app/build.gradle > app/build.gradle.new && mv app/build.gradle.new app/build.gradle
-
+          # 1. ELIMINAR LIBRERÍAS DUPLICADAS (Resolución Estratégica)
+          # Inyectamos una regla que elimina las versiones viejas de raíz
+          echo "configurations.all {
+          exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+          exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+          resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+          }" >> build.gradle
           # 2. ACTUALIZAR SDK Y GRADLE
           # Usamos el condicional || true para que no falle si el archivo no existe
           [ -f variables.gradle ] && sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' variables.gradle || true
@@ -52,6 +54,8 @@ jobs:
           echo "org.gradle.vfs.watch=false" >> gradle.properties
           # Esta línea le dice a Gradle que no use el agente de monitoreo que falla
           echo "org.gradle.instrumentation.agent=false" >> gradle.properties                                                                                
+          echo "android.useAndroidX=true" >> gradle.properties
+          echo "android.enableJetifier=true" >> gradle.properties
           chmod +x gradlew                                                                                       
           # Compilamos forzando un solo hilo y sin demonio
           ./gradlew assembleDebug --no-daemon --no-parallel --max-workers=1 --stacktrace
