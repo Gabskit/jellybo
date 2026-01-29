@@ -5,16 +5,16 @@ const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 pkg.author = 'Jellybo Team';
 pkg.description = 'Bubblebox App';
 
-// When packaging, the content of 'dist' is moved to the root of app.asar
-// That's why we just specify 'index.js'
-pkg.main = 'index.js'; 
+// Point directly to the compiled file within the packaged dist directory
+pkg.main = 'dist/index.js'; 
 
 pkg.build = pkg.build || {};
+// Include the entire dist directory, plus other assets
 pkg.build.files = [
-  { "from": "dist/", "to": "." },
-  { "from": "app/", "to": "app/" },
-  "assets/**/*",
-  "package.json"
+  'dist/**/*',
+  'app/**/*',
+  'assets/**/*',
+  'package.json'
 ];
 
 if (pkg.build.rpm) {
@@ -25,4 +25,4 @@ if (pkg.build.rpm) {
 
 fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
 
-console.log('package.json updated for electron-builder!');
+console.log('package.json updated with simplified file configuration!');
