@@ -14,7 +14,7 @@ pkg.build.files = [
 ];
 
 if (pkg.build.rpm) {
-    pkg.build.rpm.synopsis = 'Jellybo Multiplatform';
+    pkg.build.rpm.synopsis = 'Jellybo App'; // Updated synopsis
     delete pkg.build.rpm.summary;
     delete pkg.build.rpm.architecture;
 }
