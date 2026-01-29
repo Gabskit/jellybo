@@ -66,18 +66,25 @@ jobs:
 
       - name: Build Fedora RPM
         run: |
-          # 1. Cambiamos a la carpeta de electron
           cd electron
-                              
-          # 2. Inyectamos autor y descripción si faltan (electron-builder los exige)
-          sed -i 's/"name": ".*"/"name": "bubblebox",\n  "author": "Polaris",\n  "description": "Multiplatform App",/g' package.json
-                                                            
-          # 3. Instalamos dependencias limpias
+          
+          # 1. EDITAR JSON DE FORMA SEGURA CON NODE
+          node -e "
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.author = 'Jellybo Team';
+          pkg.description = 'Multiplatform App';
+          // Limpiamos configuraciones de RPM viejas que causan error
+          if (pkg.build && pkg.build.rpm) {
+              delete pkg.build.rpm.fpmPackageConfiguration; 
+          }
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
+          
+          # 2. INSTALAR Y COMPILAR
           npm install
-                                                                                          
-          # 4. Compilamos el RPM para ARM64 (Fedora Mobile)
-          # Forzamos una configuración mínima válida vía comando
-          npx electron-builder build --linux rpm --arm64 -c.rpm.fpmPackageConfiguration.scripts=""
+          npx electron-builder build --linux rpm --arm64
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
