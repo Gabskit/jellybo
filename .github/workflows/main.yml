@@ -34,17 +34,17 @@ jobs:
           npx cap sync android
           cd android
           # Aseguramos que el wrapper tenga permisos
-          chmod +x gradlew
+          # 1. BORRADO TOTAL de caches previos en el runner
+          rm -rf ~/.gradle/caches/
           # FORZAR GRADLE 8.5 (Cambiamos el archivo directamente en el server)
           sed -i 's/gradle-.*-all.zip/gradle-8.5-all.zip/g' gradle/wrapper/gradle-wrapper.properties
                                                             
           # Inyectamos configuraciones de emergencia
           echo "org.gradle.dependency.verification=off" >> gradle.properties
           echo "org.gradle.vfs.watch=false" >> gradle.properties
-                                                                                          
-          # Eliminamos cualquier rastro de cache local si existiera
-          rm -rf .gradle
-                                                                                                                        
+          # Esta línea le dice a Gradle que no use el agente de monitoreo que falla
+          echo "org.gradle.instrumentation.agent=false" >> gradle.properties                                                                                
+          chmod +x gradlew                                                                                       
           # Compilamos forzando un solo hilo y sin demonio
           ./gradlew assembleDebug --no-daemon --no-parallel --max-workers=1 --stacktrace
       # --- LINUX / FEDORA (Vía Electron) ---
