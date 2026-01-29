@@ -4,11 +4,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build-all:
-    name: Build for Android, iOS and Fedora
-    # Usamos macOS para poder compilar iOS, y desde aquí mismo sacamos los demás
+  build-android:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -17,80 +14,67 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
-      - name: Install Dependencies
-        run: npm install
-
-      # --- ANDROID ---
-      - name: Setup Java
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: Build Android APK
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Android
         run: |
           npx cap sync android
           cd android
-          # 1. ELIMINAR LIBRERÍAS DUPLICADAS (Resolución Estratégica)
-          # Esto reemplaza cualquier intento de cargar jdk7/jdk8 por el stdlib principal en TODO el proyecto
-          cat <<EOT > fix-kotlin.gradle
+          
+          # 1. LIMPIEZA RADICAL DE KOTLIN (Resolución de duplicados)
+          # Creamos un script que fuerza a Gradle a ignorar las versiones viejas de Kotlin
+          cat <<EOT > fix-dependencies.gradle
           allprojects {
-            configurations.all {
-              resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-                if (details.requested.group == 'org.jetbrains.kotlin' && 
-                  (details.requested.name == 'kotlin-stdlib-jdk7' || details.requested.name == 'kotlin-stdlib-jdk8')) {
-                    details.useTarget "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"
+              configurations.all {
+                  resolutionStrategy {
+                      force "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"
                   }
-                }
+                  exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+                  exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
               }
-            }
+          }
           EOT
-          # Inyectamos el fix al inicio del build.gradle principal
-          cat fix-kotlin.gradle build.gradle > build.gradle.new && mv build.gradle.new build.Gradle
-          # 2. ACTUALIZAR SDK Y GRADLE
-          # Usamos el condicional || true para que no falle si el archivo no existe
+          
+          # Inyectamos el fix en el build.gradle principal
+          sed -i "1i apply from: 'fix-dependencies.gradle'" build.gradle
+
+          # 2. PROPIEDADES DEL PROYECTO
+          # Desactivamos Jetifier porque Capacitor 6/7 y Kotlin 1.8+ chocan con él
+          echo "android.useAndroidX=true" > gradle.properties
+          echo "android.enableJetifier=false" >> gradle.properties
+          echo "org.gradle.dependency.verification=off" >> gradle.properties
+          echo "org.gradle.jvmargs=-Xmx2048m" >> gradle.properties
+
+          # 3. ACTUALIZAR SDK Y MOTOR GRADLE
+          # Forzamos SDK 35 para reconocer "VANILLA_ICE_CREAM"
           [ -f variables.gradle ] && sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' variables.gradle || true
           [ -f variables.gradle ] && sed -i 's/targetSdkVersion = .*/targetSdkVersion = 35/g' variables.gradle || true
-                                                                                          
+          
+          # Actualizamos a Gradle 8.5 (necesario para Java 21)
           sed -i 's/gradle-.*-all.zip/gradle-8.5-all.zip/g' gradle/wrapper/gradle-wrapper.properties
-          # FORZAR GRADLE 8.5 (Cambiamos el archivo directamente en el server)
-          sed -i 's/gradle-.*-all.zip/gradle-8.5-all.zip/g' gradle/wrapper/gradle-wrapper.properties
-                                                            
-          # Inyectamos configuraciones de emergencia
-          echo "org.gradle.dependency.verification=off" >> gradle.properties
-          echo "org.gradle.vfs.watch=false" >> gradle.properties
-          # Esta línea le dice a Gradle que no use el agente de monitoreo que falla
-          echo "org.gradle.instrumentation.agent=false" >> gradle.properties                                                                                
-          echo "android.useAndroidX=true" >> gradle.properties
-          echo "android.enableJetifier=false" >> gradle.properties
-          chmod +x gradlew                                                                                       
-          # Compilamos forzando un solo hilo y sin demonio
-          ./gradlew assembleDebug --no-daemon --no-parallel --max-workers=1 --stacktrace
-      # --- LINUX / FEDORA (Vía Electron) ---
-      - name: Build Fedora RPM (ARM64)
+          
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Build Fedora RPM
         run: |
           npx cap sync @capacitor-community/electron
           cd electron
           npm install
-          # Instalamos electron-builder si no está
-          npm install electron-builder --save-dev
-          npm run build:linux
-          
-      # --- iOS ---
-      #- name: Build iOS
-      #  run: |
-      #    npx cap sync ios
-      #    cd ios/App && pod install
-      #    xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug -destination 'generic/platform=iOS' build CODE_SIGNING_ALLOWED=NO
+          npx electron-builder build --linux rpm --arm64
 
-      # --- UPLOAD RESULTS ---
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Jellybo-Package
+          name: Jellybo-Packages
           path: |
             android/app/build/outputs/apk/debug/app-debug.apk
-            electron/out/**/*.rpm
-            #ios/App/build/Release-iphoneos/*.app
+            electron/dist/*.rpm
