@@ -53,16 +53,11 @@ jobs:
 
       - name: Build Fedora (RPM ARM64)
         run: |
-          npx cap sync @capacitor-community/electron || echo "Capacitor sync may have non-critical errors"
+          npx cap sync @capacitor-community/electron
           cd electron
-
-          # Create/Update package.json for the electron app
-          node -e "const fs = require('fs'); const path = require('path'); const rootPkgPath = path.join(__dirname, '..', 'package.json'); const electronPkgPath = path.join(__dirname, 'package.json'); const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8')); let electronPkg = {}; try { const electronPkgContents = fs.readFileSync(electronPkgPath, 'utf8'); electronPkg = JSON.parse(electronPkgContents); } catch (error) { electronPkg = { name: 'bubblebox-electron', version: '1.0.0', main: 'index.js', }; } electronPkg.dependencies = { ...(rootPkg.dependencies || {}), ...(electronPkg.dependencies || {}) }; electronPkg.devDependencies = { ...(electronPkg.devDependencies || {}), 'electron': 'latest', 'electron-builder': 'latest' }; electronPkg.author = 'Bubblebox Team'; electronPkg.description = 'Bubblebox Multiplatform App'; electronPkg.build = { appId: 'com.polaris.bubblebox', productName: 'Bubblebox', files: [ 'app/', 'index.js', 'package.json', 'node_modules/**/*' ], rpm: { synopsis: 'Bubblebox App', category: 'Game' } }; fs.writeFileSync(electronPkgPath, JSON.stringify(electronPkg, null, 2)); console.log('Electron package.json configured successfully.');"
-
-          # Install dependencies in the electron directory
           npm install
-
-          # Build the RPM, specifying architecture via CLI flag
+          npm run build
+          node update-package.js
           npx electron-builder build --linux rpm --arm64
 
       - name: Upload Artifacts

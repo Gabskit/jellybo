@@ -1,22 +1,28 @@
 {
-    "name": "jellybo",
-    "version": "1.0.0",
-    "scripts": {
-        "build:linux": "electron-builder build --linux rpm --arm64"
+  "name": "jellybo",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "build:linux": "electron-builder build --linux rpm --arm64"
+  },
+  "devDependencies": {
+    "electron": "latest",
+    "electron-builder": "latest",
+    "typescript": "latest"
+  },
+  "build": {
+    "appId": "com.polar.jellybo",
+    "productName": "Bubblebox",
+    "linux": {
+      "target": [
+        "rpm"
+      ],
+      "category": "Game",
+      "icon": "assets/Bubble_icon.png"
     },
-    "build": {
-        "appId": "com.polar.jellybo",
-        "productName": "Bubblebox",
-        "linux": {
-            "target": [
-                "rpm"
-            ],
-            "category": "Game",
-            "icon": "assets/Bubble_icon.png"
-        },
-        "rpm": {
-            "summary": "Jellybo Game para Plasma Mobile",
-            "architecture": "aarch64"
-        }
+    "rpm": {
+      "summary": "Jellybo Game para Plasma Mobile",
+      "architecture": "aarch64"
     }
+  }
 }
