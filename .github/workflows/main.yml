@@ -64,49 +64,49 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: Build Fedora RPM
+      - name: Build Fedora (RPM ARM64)
         run: |
+          npx cap sync @capacitor-community/electron
           cd electron
           
-          # 1. REPARACIÓN DEL JSON PARA ESTRUCTURA CAPACITOR
-          cat << 'EOF' > fix_pkg.js
+          # 1. FIX ESTRUCTURA (Aseguramos que index.js entre al ASAR)
+          cat << 'EOF' > fix_electron.js
           const fs = require('fs');
           const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
           
           pkg.author = 'Polaris';
           pkg.description = 'Multiplatform App';
-          
-          // Capacitor Electron usa la raíz para index.js
           pkg.main = 'index.js'; 
           
           pkg.build = pkg.build || {};
-          // Forzamos a que incluya la raíz y la carpeta app donde está el build web
+          // Usamos un patrón más agresivo para incluir archivos
           pkg.build.files = [
             "index.js",
             "package.json",
             "app/**/*",
-            "assets/**/*"
+            "assets/**/*",
+            "node_modules/**/*"
           ];
           
-          // Limpiamos configuración vieja de RPM
-          if (pkg.build.rpm) {
-              pkg.build.rpm.synopsis = pkg.build.rpm.summary || "Jellybo App";
-              delete pkg.build.rpm.summary;
-              delete pkg.build.rpm.architecture;
-          }
+          // Forzamos la configuración de RPM
+          pkg.build.rpm = {
+            synopsis: "Jellybo App",
+            category: "Game",
+            fpm: ["--architecture", "aarch64"]
+          };
           
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           EOF
-
-          node fix_pkg.js
           
-          # 2. INSTALACIÓN LIMPIA
+          node fix_electron.js
+          
+          # 2. INSTALACIÓN
           npm install
-          # Aseguramos que electron esté presente para la validación
+          # Electron debe estar en devDependencies para que el builder sepa qué versión usar
           npm install electron@latest --save-dev
           
-          # 3. COMPILACIÓN FORZANDO DIRECTORIO ACTUAL
-          npx electron-builder build --linux rpm --arm64 --config.directories.output=dist
+          # 3. COMPILACIÓN (Añadimos parámetros de depuración para ver qué falta)
+          npx electron-builder build --linux rpm --arm64 --config.asar=true
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
