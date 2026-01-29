@@ -13,7 +13,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
@@ -68,34 +68,40 @@ jobs:
         run: |
           cd electron
           
-          # Reparación quirúrgica del package.json
+          # 1. REPARACIÓN PROFUNDA DEL JSON
           node -e "
           const fs = require('fs');
           const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
           
-          // Datos básicos obligatorios
           pkg.author = 'Jellybo Team';
           pkg.description = 'Multiplatform App';
           
-          if (pkg.build && pkg.build.rpm) {
-              // 1. Renombrar summary a synopsis
-              if (pkg.build.rpm.summary) {
-                  pkg.build.rpm.synopsis = pkg.build.rpm.summary;
-                  delete pkg.build.rpm.summary;
-              }
-              // 2. Eliminar arquitectura del objeto (se pasa por CLI)
+          // Ajustamos la ruta de entrada para que coincida con la estructura de Capacitor
+          pkg.main = 'index.js'; 
+          
+          // Configuramos 'files' para que incluya todo lo necesario
+          pkg.build = pkg.build || {};
+          pkg.build.files = [
+            '**/*',
+            '!dist${/*}',
+            '!node_modules${/*}'
+          ];
+          
+          // Limpiamos los errores de RPM anteriores
+          if (pkg.build.rpm) {
+              if (pkg.build.rpm.summary) { pkg.build.rpm.synopsis = pkg.build.rpm.summary; delete pkg.build.rpm.summary; }
               delete pkg.build.rpm.architecture;
-              // 3. Limpiar cualquier otro rastro de configuración antigua
-              delete pkg.build.rpm.fpmPackageConfiguration;
           }
           
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
           
-          # Instalación y compilación
+          # 2. INSTALACIÓN Y COMPILACIÓN
           npm install
           npm install electron --save-dev
-          npx electron-builder build --linux rpm --arm64
+          
+          # Forzamos la creación del RPM ignorando errores de firma si los hay
+          npx electron-builder build --linux rpm --arm64 -c.target=rpm
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
