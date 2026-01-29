@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.polar.jellybo"
+    namespace "com.polaris.bubblebox"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.polar.jellybo"
+        applicationId "com.polaris.bubblebox"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

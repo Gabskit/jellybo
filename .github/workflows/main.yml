@@ -1,4 +1,5 @@
-name: Build Jellybo Multiplatform
+
+name: Build Bubblebox Multiplatform
 on:
   push:
     branches: [ main ]
@@ -52,67 +53,19 @@ jobs:
 
       - name: Build Fedora (RPM ARM64)
         run: |
-          npx cap sync electron || echo "Capacitor sync may have non-critical errors"
+          npx cap sync @capacitor-community/electron || echo "Capacitor sync may have non-critical errors"
           cd electron
 
-          # Create a package.json for the electron app
-          node -e "
-          const fs = require('fs');
-          const path = require('path');
-          const rootPkgPath = path.join(__dirname, '..', 'package.json');
-          const electronPkgPath = path.join(__dirname, 'package.json');
-
-          const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8'));
-
-          let pkg = {
-            name: 'jellybo-electron',
-            version: '1.0.0',
-            main: 'index.js',
-            scripts: {
-              'electron:start': 'electron .'
-            },
-            dependencies: {},
-            devDependencies: {}
-          };
-
-          // Merge dependencies
-          pkg.dependencies = { ...(rootPkg.dependencies || {}), ...(pkg.dependencies || {}) };
-
-          // Add electron and builder
-          pkg.devDependencies['electron'] = 'latest';
-          pkg.devDependencies['electron-builder'] = 'latest';
+          # Create/Update package.json for the electron app
+          node -e "\n          const fs = require('fs');\n          const path = require('path');\n          \n          const rootPkgPath = path.join(__dirname, '..', 'package.json');\n          const electronPkgPath = path.join(__dirname, 'package.json');\n\n          const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8'));\n\n          let electronPkg = {};\n          try {\n            const electronPkgContents = fs.readFileSync(electronPkgPath, 'utf8');\n            electronPkg = JSON.parse(electronPkgContents);\n          } catch (error) {\n            electronPkg = {\n              name: 'bubblebox-electron',\n              version: '1.0.0',\n              main: 'index.js',\n            };\n          }\n\n          // Merge dependencies\n          electronPkg.dependencies = { ...(rootPkg.dependencies || {}), ...(electronPkg.dependencies || {}) };\n          electronPkg.devDependencies = {\n            ...(electronPkg.devDependencies || {}),\n            'electron': 'latest',\n            'electron-builder': 'latest'\n          };\n          \n          electronPkg.author = 'Bubblebox Team';\n          electronPkg.description = 'Bubblebox Multiplatform App';\n          \n          // Configure electron-builder\n          electronPkg.build = {\n            appId: 'com.polaris.bubblebox',\n            productName: 'Bubblebox',\n            files: [\n              'app/',\n              'index.js',\n              'package.json',\n              'node_modules/**/*' \n            ],\n            rpm: {\n              synopsis: 'Bubblebox App',\n              category: 'Game'\n            }\n          };\n\n          fs.writeFileSync(electronPkgPath, JSON.stringify(electronPkg, null, 2));\n          console.log('Electron package.json configured successfully.');\n          "\n          
+          # Install dependencies in the electron directory\n          npm install
           
-          pkg.author = 'Polaris';
-          pkg.description = 'Multiplatform App';
-          
-          pkg.build = {
-            appId: 'com.polaris.bubblebox',
-            productName: 'Bubblebox',
-            files: [
-              'app/',
-              'index.js',
-              'package.json',
-              'node_modules/**/*' 
-            ],
-            rpm: {
-              architecture: 'aarch64'
-            }
-          };
-
-          fs.writeFileSync(electronPkgPath, JSON.stringify(pkg, null, 2));
-          console.log('Electron package.json created successfully.');
-          "
-          
-          # Install all dependencies within the electron directory
-          npm install
-          
-          # Build the RPM
-          npx electron-builder build --linux rpm --arm64
+          # Build the RPM, specifying architecture via CLI flag\n          npx electron-builder build --linux rpm --arm64
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Jellybo-Packages
+          name: Bubblebox-Packages
           path: |
             android/app/build/outputs/apk/debug/app-debug.apk
             electron/dist/*.rpm
