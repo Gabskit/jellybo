@@ -68,40 +68,38 @@ jobs:
         run: |
           cd electron
           
-          # 1. REPARACIÓN PROFUNDA DEL JSON
-          node -e "
+          # 1. CREAR SCRIPT DE REPARACIÓN (Evita el error de 'bad substitution')
+          cat << 'EOF' > fix_pkg.js
           const fs = require('fs');
           const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
           
           pkg.author = 'Jellybo Team';
           pkg.description = 'Multiplatform App';
-          
-          // Ajustamos la ruta de entrada para que coincida con la estructura de Capacitor
           pkg.main = 'index.js'; 
           
-          // Configuramos 'files' para que incluya todo lo necesario
           pkg.build = pkg.build || {};
           pkg.build.files = [
-            '**/*',
-            '!dist${/*}',
-            '!node_modules${/*}'
+            "**/*",
+            "!dist{/*}",
+            "!node_modules{/*}"
           ];
           
-          // Limpiamos los errores de RPM anteriores
           if (pkg.build.rpm) {
-              if (pkg.build.rpm.summary) { pkg.build.rpm.synopsis = pkg.build.rpm.summary; delete pkg.build.rpm.summary; }
+              if (pkg.build.rpm.summary) { 
+                  pkg.build.rpm.synopsis = pkg.build.rpm.summary; 
+                  delete pkg.build.rpm.summary; 
+              }
               delete pkg.build.rpm.architecture;
           }
           
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-          "
-          
-          # 2. INSTALACIÓN Y COMPILACIÓN
+          EOF
+
+          # 2. EJECUTAR REPARACIÓN Y COMPILAR
+          node fix_pkg.js
           npm install
           npm install electron --save-dev
-          
-          # Forzamos la creación del RPM ignorando errores de firma si los hay
-          npx electron-builder build --linux rpm --arm64 -c.target=rpm
+          npx electron-builder build --linux rpm --arm64
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
