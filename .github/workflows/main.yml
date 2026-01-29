@@ -33,6 +33,9 @@ jobs:
         run: |
           npx cap sync android
           cd android
+          echo "org.gradle.dependency.verification=off" >> gradle.properties
+          echo "org.gradle.vfs.watch=false" >> gradle.properties
+          echo "org.gradle.parallel=false" >> gradle.properties
           chmod +x gradlew
           ./gradlew clean
           ./gradlew assembleDebug --no-daemon --no-parallel --max-workers=1 --refresh-dependencies --stacktrace
