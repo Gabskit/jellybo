@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
 
       - name: Build Android APK
         run: |
@@ -35,6 +35,9 @@ jobs:
           cd android
           # Aseguramos que el wrapper tenga permisos
           chmod +x gradlew
+          
+          # Forzamos la actualización de Gradle desde el comando por si acaso
+          ./gradlew wrapper --gradle-version 8.5
                                                                       
           # Inyectamos configuraciones de emergencia
           echo "org.gradle.dependency.verification=off" >> gradle.properties
