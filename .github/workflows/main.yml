@@ -54,10 +54,6 @@ jobs:
       - name: Sync Capacitor for Electron
         run: npx cap sync @capacitor-community/electron
 
-      - name: Uninstall Conflicting Types for Electron
-        working-directory: ./electron
-        run: npm uninstall @types/minimatch
-
       - name: Install Electron Dependencies
         working-directory: ./electron
         run: npm install
@@ -65,8 +61,12 @@ jobs:
       - name: Compile Electron TypeScript
         working-directory: ./electron
         run: npx tsc --skipLibCheck || echo "TypeScript compilation had warnings."
+      
+      - name: Verify dist folder content
+        working-directory: ./electron
+        run: ls -R dist/
 
-      - name: Update Electron Package Info
+      - name: Update Electron Package Info for Build
         working-directory: ./electron
         run: node update-package.js
 
