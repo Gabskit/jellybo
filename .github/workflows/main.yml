@@ -94,6 +94,7 @@ jobs:
           
           # Instalación y compilación
           npm install
+          npm install electron --save-dev
           npx electron-builder build --linux rpm --arm64
 
       - name: Upload Artifacts
