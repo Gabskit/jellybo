@@ -34,12 +34,21 @@ jobs:
           npx cap sync android
           cd android
           # 1. ELIMINAR LIBRERÍAS DUPLICADAS (Resolución Estratégica)
-          # Inyectamos una regla que elimina las versiones viejas de raíz
-          echo "configurations.all {
-          exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
-          exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
-          resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-          }" >> build.gradle
+          # Esto reemplaza cualquier intento de cargar jdk7/jdk8 por el stdlib principal en TODO el proyecto
+          cat <<EOT > fix-kotlin.gradle
+          allprojects {
+            configurations.all {
+              resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+                if (details.requested.group == 'org.jetbrains.kotlin' && 
+                  (details.requested.name == 'kotlin-stdlib-jdk7' || details.requested.name == 'kotlin-stdlib-jdk8')) {
+                    details.useTarget "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"
+                  }
+                }
+              }
+            }
+          EOT
+          # Inyectamos el fix al inicio del build.gradle principal
+          cat fix-kotlin.gradle build.gradle > build.gradle.new && mv build.gradle.new build.Gradle
           # 2. ACTUALIZAR SDK Y GRADLE
           # Usamos el condicional || true para que no falle si el archivo no existe
           [ -f variables.gradle ] && sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' variables.gradle || true
