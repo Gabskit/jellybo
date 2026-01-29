@@ -35,10 +35,9 @@ jobs:
           cd android
           # Aseguramos que el wrapper tenga permisos
           chmod +x gradlew
-          
-          # Forzamos la actualización de Gradle desde el comando por si acaso
-          ./gradlew wrapper --gradle-version 8.5
-                                                                      
+          # FORZAR GRADLE 8.5 (Cambiamos el archivo directamente en el server)
+          sed -i 's/gradle-.*-all.zip/gradle-8.5-all.zip/g' gradle/wrapper/gradle-wrapper.properties
+                                                            
           # Inyectamos configuraciones de emergencia
           echo "org.gradle.dependency.verification=off" >> gradle.properties
           echo "org.gradle.vfs.watch=false" >> gradle.properties
