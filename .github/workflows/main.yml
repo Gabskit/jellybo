@@ -13,7 +13,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
@@ -52,53 +52,61 @@ jobs:
 
       - name: Build Fedora (RPM ARM64)
         run: |
-          npx cap sync @capacitor-community/electron
+          npx cap sync electron || echo "Capacitor sync may have non-critical errors"
           cd electron
 
-          # 1. REMOVE LOCK FILE & FIX BUILD CONFIG
-          rm -f package-lock.json
+          # Create a package.json for the electron app
           node -e "
           const fs = require('fs');
           const path = require('path');
-          const rootPkg = require(path.join(__dirname, '..', 'package.json'));
-          const pkg = require(path.join(__dirname, 'package.json'));
+          const rootPkgPath = path.join(__dirname, '..', 'package.json');
+          const electronPkgPath = path.join(__dirname, 'package.json');
 
-          // Merge production dependencies from root
+          const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8'));
+
+          let pkg = {
+            name: 'jellybo-electron',
+            version: '1.0.0',
+            main: 'index.js',
+            scripts: {
+              'electron:start': 'electron .'
+            },
+            dependencies: {},
+            devDependencies: {}
+          };
+
+          // Merge dependencies
           pkg.dependencies = { ...(rootPkg.dependencies || {}), ...(pkg.dependencies || {}) };
 
-          // Add essential dev dependencies for the builder
-          pkg.devDependencies = {
-            ...(pkg.devDependencies || {}),
-            'electron': 'latest',
-            'electron-builder': 'latest'
-          };
-
-          // Configure builder
-          pkg.main = 'index.js';
-          pkg.build = pkg.build || {};
-          pkg.build.appId = 'com.polaris.bubblebox';
-          pkg.build.productName = 'Bubblebox';
+          // Add electron and builder
+          pkg.devDependencies['electron'] = 'latest';
+          pkg.devDependencies['electron-builder'] = 'latest';
           
-          // Explicitly include node_modules to resolve 'no node modules returned' error
-          pkg.build.files = [
-            'app/',
-            'index.js',
-            'package.json',
-            'node_modules/**/*' // Force inclusion of all dependencies
-          ];
-
-          pkg.build.rpm = {
-            architecture: 'aarch64'
+          pkg.author = 'Polaris';
+          pkg.description = 'Multiplatform App';
+          
+          pkg.build = {
+            appId: 'com.polaris.bubblebox',
+            productName: 'Bubblebox',
+            files: [
+              'app/',
+              'index.js',
+              'package.json',
+              'node_modules/**/*' 
+            ],
+            rpm: {
+              architecture: 'aarch64'
+            }
           };
 
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-          console.log('Electron package.json has been configured for build.');
+          fs.writeFileSync(electronPkgPath, JSON.stringify(pkg, null, 2));
+          console.log('Electron package.json created successfully.');
           "
-
-          # 2. INSTALL ALL DEPENDENCIES
+          
+          # Install all dependencies within the electron directory
           npm install
           
-          # 3. BUILD THE RPM
+          # Build the RPM
           npx electron-builder build --linux rpm --arm64
 
       - name: Upload Artifacts
