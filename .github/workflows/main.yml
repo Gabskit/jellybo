@@ -32,7 +32,7 @@ jobs:
       - name: Build Android APK
         run: |
           npx cap sync android
-          cd android && ./gradlew assembleDebug
+          cd android && ./gradlew assembleDebug --no-daemon --no-parallel --max-workers=2
 
       # --- LINUX / FEDORA (Vía Electron) ---
       - name: Build Linux RPM
