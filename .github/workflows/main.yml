@@ -68,38 +68,45 @@ jobs:
         run: |
           cd electron
           
-          # 1. CREAR SCRIPT DE REPARACIÓN (Evita el error de 'bad substitution')
+          # 1. REPARACIÓN DEL JSON PARA ESTRUCTURA CAPACITOR
           cat << 'EOF' > fix_pkg.js
           const fs = require('fs');
           const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
           
-          pkg.author = 'Jellybo Team';
+          pkg.author = 'Polaris';
           pkg.description = 'Multiplatform App';
+          
+          // Capacitor Electron usa la raíz para index.js
           pkg.main = 'index.js'; 
           
           pkg.build = pkg.build || {};
+          // Forzamos a que incluya la raíz y la carpeta app donde está el build web
           pkg.build.files = [
-            "**/*",
-            "!dist{/*}",
-            "!node_modules{/*}"
+            "index.js",
+            "package.json",
+            "app/**/*",
+            "assets/**/*"
           ];
           
+          // Limpiamos configuración vieja de RPM
           if (pkg.build.rpm) {
-              if (pkg.build.rpm.summary) { 
-                  pkg.build.rpm.synopsis = pkg.build.rpm.summary; 
-                  delete pkg.build.rpm.summary; 
-              }
+              pkg.build.rpm.synopsis = pkg.build.rpm.summary || "Jellybo App";
+              delete pkg.build.rpm.summary;
               delete pkg.build.rpm.architecture;
           }
           
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           EOF
 
-          # 2. EJECUTAR REPARACIÓN Y COMPILAR
           node fix_pkg.js
+          
+          # 2. INSTALACIÓN LIMPIA
           npm install
-          npm install electron --save-dev
-          npx electron-builder build --linux rpm --arm64
+          # Aseguramos que electron esté presente para la validación
+          npm install electron@latest --save-dev
+          
+          # 3. COMPILACIÓN FORZANDO DIRECTORIO ACTUAL
+          npx electron-builder build --linux rpm --arm64 --config.directories.output=dist
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
