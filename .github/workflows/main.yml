@@ -13,7 +13,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
@@ -66,11 +66,18 @@ jobs:
 
       - name: Build Fedora RPM
         run: |
-          npx cap sync @capacitor-community/electron
+          # 1. Cambiamos a la carpeta de electron
           cd electron
+                              
+          # 2. Inyectamos autor y descripción si faltan (electron-builder los exige)
+          sed -i 's/"name": ".*"/"name": "bubblebox",\n  "author": "Polaris",\n  "description": "Multiplatform App",/g' package.json
+                                                            
+          # 3. Instalamos dependencias limpias
           npm install
-          npx electron-builder build --linux rpm --arm64
-
+                                                                                          
+          # 4. Compilamos el RPM para ARM64 (Fedora Mobile)
+          # Forzamos una configuración mínima válida vía comando
+          npx electron-builder build --linux rpm --arm64 -c.rpm.fpmPackageConfiguration.scripts=""
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
