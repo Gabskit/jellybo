@@ -68,3 +68,6 @@ app.on('activate', async function () {
 });
 
 // Place all ipc or other electron api calls and custom functionality under this line
+// Activa el soporte nativo de Wayland y teclado virtual
+app.commandLine.appendSwitch('enable-wayland-ime');
+app.commandLine.appendSwitch('touch-events', 'enabled');

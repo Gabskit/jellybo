@@ -36,6 +36,7 @@ jobs:
           # Aseguramos que el wrapper tenga permisos
           # 1. BORRADO TOTAL de caches previos en el runner
           rm -rf ~/.gradle/caches/
+          sed -i '/dependencies {/a \    constraints {\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22") { because("kotlin-stdlib handles this now") }\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22") { because("kotlin-stdlib handles this now") }\n    }' app/build.gradle'}'
           sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' variables.gradle
           sed -i 's/targetSdkVersion = .*/targetSdkVersion = 35/g' variables.gradle
 
