@@ -21,16 +21,16 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: Install Dependencies
+      - name: Install Root Dependencies
         run: npm install
+
+      - name: Build Web App
+        run: npm run build
 
       - name: Build Android
         run: |
           npx cap sync android
           cd android
-          
-          # 1. LIMPIEZA RADICAL DE KOTLIN (Resolución de duplicados)
-          # Creamos un script que fuerza a Gradle a ignorar las versiones viejas de Kotlin
           cat <<EOT > fix-dependencies.gradle
           allprojects {
               configurations.all {
@@ -42,25 +42,14 @@ jobs:
               }
           }
           EOT
-          
-          # Inyectamos el fix en el build.gradle principal
           sed -i "1i apply from: 'fix-dependencies.gradle'" build.gradle
-
-          # 2. PROPIEDADES DEL PROYECTO
-          # Desactivamos Jetifier porque Capacitor 6/7 y Kotlin 1.8+ chocan con él
           echo "android.useAndroidX=true" > gradle.properties
           echo "android.enableJetifier=false" >> gradle.properties
           echo "org.gradle.dependency.verification=off" >> gradle.properties
           echo "org.gradle.jvmargs=-Xmx2048m" >> gradle.properties
-
-          # 3. ACTUALIZAR SDK Y MOTOR GRADLE
-          # Forzamos SDK 35 para reconocer "VANILLA_ICE_CREAM"
           [ -f variables.gradle ] && sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' variables.gradle || true
           [ -f variables.gradle ] && sed -i 's/targetSdkVersion = .*/targetSdkVersion = 35/g' variables.gradle || true
-          
-          # Actualizamos a Gradle 8.5 (necesario para Java 21)
           sed -i 's/gradle-.*-all.zip/gradle-8.5-all.zip/g' gradle/wrapper/gradle-wrapper.properties
-          
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
@@ -68,45 +57,51 @@ jobs:
         run: |
           npx cap sync @capacitor-community/electron
           cd electron
-          
-          # 1. FIX ESTRUCTURA (Aseguramos que index.js entre al ASAR)
-          cat << 'EOF' > fix_electron.js
+
+          # 1. MERGE DEPS & FIX BUILD CONFIG
+          node -e "
           const fs = require('fs');
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          
-          pkg.author = 'Polaris';
-          pkg.description = 'Multiplatform App';
-          pkg.main = 'index.js'; 
-          
-          pkg.build = pkg.build || {};
-          // Usamos un patrón más agresivo para incluir archivos
-          pkg.build.files = [
-            "index.js",
-            "package.json",
-            "app/**/*",
-            "assets/**/*",
-            "node_modules/**/*"
-          ];
-          
-          // Forzamos la configuración de RPM
-          pkg.build.rpm = {
-            synopsis: "Jellybo App",
-            category: "Game",
-            fpm: ["--architecture", "aarch64"]
+          const path = require('path');
+          const rootPkg = require(path.join(__dirname, '..', 'package.json'));
+          const pkg = require(path.join(__dirname, 'package.json'));
+
+          // Merge production dependencies from root
+          pkg.dependencies = { ...(rootPkg.dependencies || {}), ...(pkg.dependencies || {}) };
+
+          // Add essential dev dependencies for the builder
+          pkg.devDependencies = {
+            ...(pkg.devDependencies || {}),
+            'electron': 'latest',
+            'electron-builder': 'latest'
           };
+
+          // Configure builder
+          pkg.main = 'index.js';
+          pkg.build = pkg.build || {};
+          pkg.build.appId = 'com.polagis.bubblebox';
+          pkg.build.productName = 'Bubblebox';
           
+          // CRITICAL FIX: Explicitly include node_modules to resolve 'no node modules returned' error
+          pkg.build.files = [
+            'app/',
+            'index.js',
+            'package.json',
+            'node_modules/**/*' // Force inclusion of all dependencies
+          ];
+
+          pkg.build.rpm = {
+            architecture: 'aarch64'
+          };
+
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-          EOF
-          
-          node fix_electron.js
-          
-          # 2. INSTALACIÓN
+          console.log('Electron package.json has been configured for build.');
+          "
+
+          # 2. INSTALL ALL DEPENDENCIES
           npm install
-          # Electron debe estar en devDependencies para que el builder sepa qué versión usar
-          npm install electron@latest --save-dev
           
-          # 3. COMPILACIÓN (Añadimos parámetros de depuración para ver qué falta)
-          npx electron-builder build --linux rpm --arm64 --config.asar=true
+          # 3. BUILD THE RPM
+          npx electron-builder build --linux rpm --arm64
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
