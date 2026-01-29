@@ -13,7 +13,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
@@ -68,20 +68,31 @@ jobs:
         run: |
           cd electron
           
-          # 1. EDITAR JSON DE FORMA SEGURA CON NODE
+          # Reparación quirúrgica del package.json
           node -e "
           const fs = require('fs');
           const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          
+          // Datos básicos obligatorios
           pkg.author = 'Jellybo Team';
           pkg.description = 'Multiplatform App';
-          // Limpiamos configuraciones de RPM viejas que causan error
+          
           if (pkg.build && pkg.build.rpm) {
-              delete pkg.build.rpm.fpmPackageConfiguration; 
+              // 1. Renombrar summary a synopsis
+              if (pkg.build.rpm.summary) {
+                  pkg.build.rpm.synopsis = pkg.build.rpm.summary;
+                  delete pkg.build.rpm.summary;
+              }
+              // 2. Eliminar arquitectura del objeto (se pasa por CLI)
+              delete pkg.build.rpm.architecture;
+              // 3. Limpiar cualquier otro rastro de configuración antigua
+              delete pkg.build.rpm.fpmPackageConfiguration;
           }
+          
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
           
-          # 2. INSTALAR Y COMPILAR
+          # Instalación y compilación
           npm install
           npx electron-builder build --linux rpm --arm64
 
