@@ -64,7 +64,7 @@ jobs:
           # Esta línea le dice a Gradle que no use el agente de monitoreo que falla
           echo "org.gradle.instrumentation.agent=false" >> gradle.properties                                                                                
           echo "android.useAndroidX=true" >> gradle.properties
-          echo "android.enableJetifier=true" >> gradle.properties
+          echo "android.enableJetifier=false" >> gradle.properties
           chmod +x gradlew                                                                                       
           # Compilamos forzando un solo hilo y sin demonio
           ./gradlew assembleDebug --no-daemon --no-parallel --max-workers=1 --stacktrace
