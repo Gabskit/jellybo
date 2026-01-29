@@ -1,51 +1,45 @@
-# Project Blueprint
+# Bubblebox Application Blueprint
 
 ## Overview
 
-This project is a web application that has been migrated from Cordova to Capacitor. It uses a variety of technologies, including jQuery, Alpine.js, and Stage.js. The project is configured for native builds on Android and iOS.
+Bubblebox is an interactive web application built with modern, framework-less web technologies. It features a central canvas element for dynamic content (powered by Stage.js) and a simple UI managed by Alpine.js. The goal is to provide a clean, playful, and responsive user experience.
 
-## Style, Design, and Features
+## Design and Features (v1 - "Bubble" Theme)
 
-### Style and Design
+### Visual Design
+*   **Theme:** Modern, clean, and playful, inspired by soap bubbles.
+*   **Color Palette:**
+    *   `--background-color`: `#f0f2f5` (Light Gray)
+    *   `--text-color`: `#333` (Dark Gray)
+    *   `--primary-color`: `#007bff` (Bright Blue)
+    *   `--accent-gradient`: `linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)` (Iridescent Blue)
+    *   `--shadow-color`: `rgba(102, 166, 255, 0.3)`
+*   **Typography:** 'Lato' and 'Helvetica Neue', falling back to system sans-serif fonts. The UI will use clear headings and readable paragraph text.
+*   **Layout:** A simple, single-page layout with a header and a main content area.
+*   **Iconography:** The design uses a simple emoji "💵" for currency.
 
-*   **Frameworks:** jQuery Mobile, Semantic UI
-*   **Layout:** The application uses a single-page architecture with multiple "pages" managed by jQuery Mobile.
-*   **Appearance:** The application has a custom theme and uses a variety of UI components from Semantic UI, including buttons and labels.
+### Components
+*   **Header (`<header-component>`):**
+    *   A custom Web Component that displays the application title ("Bubblebox") and the user's current cash amount.
+    *   It's styled with the accent gradient and a soft drop shadow to make it "pop".
+    *   The cash amount is reactive and is managed by Alpine.js.
+*   **Canvas Container (`.canva-conta`):**
+    *   A flexible container that holds the main `<canvas>` element.
+    *   It's designed to fill the remaining vertical space of the viewport.
+*   **Canvas (`#canva`):**
+    *   The main interactive area, powered by Stage.js.
 
 ### Features
+*   **Reactive Data:** Uses Alpine.js to manage and display the user's cash.
+*   **Dynamic Canvas:** Uses Stage.js to render graphics in the main canvas area.
+*   **Responsive Design:** The layout adapts to different screen sizes.
 
-*   **Splash Screen:** A "curtain" element is displayed for 3 seconds when the application starts.
-*   **Main Page:** The main page displays a header, a canvas element, and a footer.
-*   **Test Page:** A separate page for testing purposes.
-*   **Dynamic Content:** The application uses Alpine.js for data binding and dynamic content updates.
-*   **Canvas:** The application uses Stage.js to create and manage a canvas element.
+## Current Plan: Initial Redesign
 
-## Current Plan
-
-This section documents the steps taken to prepare the project for native builds.
-
-*   **Install Capacitor CLI:** The Capacitor CLI was installed to enable the migration process.
-*   **Initialize Capacitor:** Capacitor was initialized in the project, creating the `capacitor.config.ts` file.
-*   **Set Package Name:** The `appId` was updated to `com.polar.jellybo` in `capacitor.config.ts`.
-*   **Add Native Platforms:** The Android and iOS platforms were added to the project by installing `@capacitor/android` and `@capacitor/ios` and running `npx cap add android` and `npx cap add ios`.
-
-## Build Instructions
-
-To generate the final application packages, you must use the native IDEs on your local machine.
-
-### Android Build (`.apk`)
-
-1.  **Open in Android Studio**: Open the `android` folder from your project in Android Studio.
-2.  **Sync Gradle**: Wait for Android Studio to index the files and sync the project with Gradle.
-3.  **Build**: Go to the menu and select **Build** > **Build Bundle(s) / APK(s)** > **Build APK(s)**.
-4.  **Locate the file**: Your `.apk` file will be in the `android/app/build/outputs/apk/debug/` directory.
-
-### iOS Build (`.ipa`)
-
-You must have a Mac with Xcode and CocoaPods installed.
-
-1.  **Install Dependencies**: In your terminal, navigate to the `ios` directory and run `pod install`.
-2.  **Open in Xcode**: Open the `.xcworkspace` file from the `ios` directory in Xcode.
-3.  **Configure Signing**: Select your project in the Xcode navigator, go to the "Signing & Capabilities" tab, and select your developer team.
-4.  **Run/Build**: Select a target simulator or a connected iOS device and click the "Run" button.
-5.  **Archive for Distribution**: To create an `.ipa` file, use the **Product** > **Archive** menu.
+*   **Goal:** Replace the old, jQuery Mobile-based design with a new, modern "Bubblebox" theme.
+*   **Steps:**
+    1.  **Structure HTML:** Update `index.html` to use a modern structure with the `<header-component>`.
+    2.  **Create Web Component:** Build the `<header-component>` in a new `components/Header.js` file.
+    3.  **Implement New Styles:** Replace all content in `www/css/style.css` with the new theme styles using modern CSS properties.
+    4.  **Refactor JavaScript:** Convert `www/main.ts` to `www/main.js`, removing jQuery Mobile dependencies and integrating the new Web Component.
+    5.  **Cleanup:** Remove the old `main.ts` file.
