@@ -1,8 +1,6 @@
 
 // Global variables
 var money: number = 1000;
-var ww: number = window.innerWidth;
-var wh: number = window.innerHeight;
 
 // TypeScript declarations for libraries
 declare var $: any; // Declaration for jQuery
@@ -60,9 +58,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 4. Initialize the Stage.js canvas element
+    // 4. Initialize the Stage.js canvas element only after the DOM is ready
     const canvasElement = document.getElementById("canva");
     if (canvasElement) {
+      const ww: number = window.innerWidth;
+      const wh: number = window.innerHeight;
       const app = new Stage({
           canvas: canvasElement
       });

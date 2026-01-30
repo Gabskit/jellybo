@@ -26,8 +26,7 @@
       "icon": "assets/Bubble_icon.png"
     },
     "rpm": {
-      "summary": "Jellybo Game para Plasma Mobile",
-      "architecture": "aarch64"
+      "summary": "Jellybo Game para Plasma Mobile"
     }
   }
 }
