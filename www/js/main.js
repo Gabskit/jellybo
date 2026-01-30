@@ -1,57 +1,13 @@
 "use strict";
 // Global variables
 var money = 1000;
-/**
- * Shows a page and hides all other pages.
- * This is the modern replacement for jQuery Mobile's changePage function.
- * @param pageId The ID of the page to show (e.g., '#main').
- */
-function showPage(pageId) {
-    // Hide all elements with the class 'page'
-    document.querySelectorAll('.page').forEach((page) => {
-        page.style.display = 'none';
-    });
-    // Show the single target page
-    const targetPage = document.querySelector(pageId);
-    if (targetPage) {
-        targetPage.style.display = 'block';
-    }
-}
 // Initialize Alpine.js data
 document.addEventListener('alpine:init', () => {
     Alpine.data('mnpg', () => ({
         cash: "💵$: " + money,
         dev: true
     }));
-});
-// Handle initial page load and set up navigation listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Show the initial splash screen
-    showPage('#curtain');
-    // 2. After 2 seconds, transition to the main page
     setTimeout(() => {
-        showPage('#main');
+        $.mobile.changePage("#main", { transition: "slideup" });
     }, 2000);
-    // 3. Set up a single event listener for all navigation links
-    document.body.addEventListener('click', (event) => {
-        // Find the closest ancestor `<a>` tag with an href starting with '#'
-        const anchor = event.target.closest('a[href^="#"]');
-        if (anchor) {
-            event.preventDefault(); // Stop the browser's default link behavior
-            const pageId = anchor.getAttribute('href');
-            if (pageId) {
-                showPage(pageId); // Navigate to the page
-            }
-        }
-    });
-    // 4. Initialize the Stage.js canvas element only after the DOM is ready
-    const canvasElement = document.getElementById("canva");
-    if (canvasElement) {
-        const ww = window.innerWidth;
-        const wh = window.innerHeight;
-        const app = new Stage({
-            canvas: canvasElement
-        });
-        app.viewbox(ww, wh, (mode = "in-pad"));
-    }
 });

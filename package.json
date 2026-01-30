@@ -13,10 +13,13 @@
     "@types/alpinejs": "^3.13.11",
     "@types/electron": "^1.6.12",
     "@types/node": "^25.1.0",
+    "concurrently": "^8.2.2",
     "http-server": "^14.1.1",
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "start": "http-server www -c-1"
+    "start": "http-server www -c-1",
+    "dev": "concurrently \"npm start\" \"npx cap run android --livereload\"",
+    "emulate:android": "npx cap run android"
   }
 }
