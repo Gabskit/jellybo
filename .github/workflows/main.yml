@@ -50,30 +50,6 @@ jobs:
           sed -i 's/gradle-.*-all.zip/gradle-8.5-all.zip/g' gradle/wrapper/gradle-wrapper.properties
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
-
-      - name: Sync Capacitor for Electron
-        run: npx cap sync @capacitor-community/electron
-
-      - name: Install Electron Dependencies
-        working-directory: ./electron
-        run: npm install
-
-      - name: Compile Electron TypeScript
-        working-directory: ./electron
-        run: npx tsc --skipLibCheck || echo "TypeScript compilation had warnings."
-      
-      - name: Verify dist folder content
-        working-directory: ./electron
-        run: ls -R dist/
-
-      - name: Update Electron Package Info for Build
-        working-directory: ./electron
-        run: node update-package.js
-
-      - name: Build Fedora (RPM ARM64)
-        working-directory: ./electron
-        run: npx electron-builder build --linux rpm --arm64
-
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
