@@ -73,12 +73,10 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Install Dependencies and Prepare Web Assets
         shell: bash
         run: |
@@ -97,33 +95,16 @@ jobs:
               fs.cpSync(assetsDir, path.join(wwwDir, assetsDir), { recursive: true });
             }
           "
-
       - name: Build Fedora (RPM)
         shell: bash
         run: |
           npx cap sync @capacitor-community/electron
           cd electron
           npm install
+          npm uninstall -f @types/minimatch
           npx tsc --skipLibCheck
-          cat <<'EOF' > update-package.js
-          const fs = require('fs');
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          pkg.author = 'Jellybo Team';
-          pkg.description = 'Bubblebox App';
-          pkg.main = 'dist/index.js';
-          pkg.build = pkg.build || {};
-          pkg.build.files = ['dist/**/', 'app/**/', 'assets/**/', 'package.json'];
-          if (pkg.build.rpm) {
-              pkg.build.rpm.synopsis = 'Bubblebox Multiplatform';
-              delete pkg.build.rpm.summary;
-              delete pkg.build.rpm.architecture;
-          }
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-          console.log('package.json updated for electron-builder!');
-          EOF
-          node update-package.js
+          node -e 'const fs = require("fs"); const pkg = JSON.parse(fs.readFileSync("package.json", "utf8")); pkg.author = "Jellybo Team"; pkg.description = "Bubblebox App"; pkg.main = "dist/index.js"; pkg.build = pkg.build || {}; pkg.build.files = ["dist/**/*", "app/**/*", "assets/**/*", "package.json"]; fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));'
           npx electron-builder build --linux rpm --arm64
-
       - name: Upload RPM Artifact
         uses: actions/upload-artifact@v4
         with:
