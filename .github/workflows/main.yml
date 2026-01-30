@@ -77,7 +77,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install Dependencies and Prepare Web Assets
+      - name: Install, Sync, and Build Fedora RPM
         shell: bash
         run: |
           npm install
@@ -95,13 +95,10 @@ jobs:
               fs.cpSync(assetsDir, path.join(wwwDir, assetsDir), { recursive: true });
             }
           "
-      - name: Build Fedora (RPM)
-        shell: bash
-        run: |
           npx cap sync @capacitor-community/electron
           cd electron
           npm install
-          npm uninstall -f @types/minimatch
+          rm -rf node_modules/@types/minimatch
           npx tsc --skipLibCheck
           node -e 'const fs = require("fs"); const pkg = JSON.parse(fs.readFileSync("package.json", "utf8")); pkg.author = "Jellybo Team"; pkg.description = "Bubblebox App"; pkg.main = "dist/index.js"; pkg.build = pkg.build || {}; pkg.build.files = ["dist/**/*", "app/**/*", "assets/**/*", "package.json"]; fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));'
           npx electron-builder build --linux rpm --arm64
@@ -110,3 +107,43 @@ jobs:
         with:
           name: Bubblebox-RPM
           path: electron/dist/*.rpm
+
+  build-deb:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install, Sync, and Build Debian/KDE package
+        shell: bash
+        run: |
+          npm install
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const wwwDir = 'www';
+            const assetsDir = 'assets';
+            const filesToCopy = ['index.html', 'main.js', 'style.css'];
+            if (!fs.existsSync(wwwDir)) fs.mkdirSync(wwwDir, { recursive: true });
+            filesToCopy.forEach(file => {
+              if (fs.existsSync(file)) fs.copyFileSync(file, path.join(wwwDir, file));
+            });
+            if (fs.existsSync(assetsDir)) {
+              fs.cpSync(assetsDir, path.join(wwwDir, assetsDir), { recursive: true });
+            }
+          "
+          npx cap sync @capacitor-community/electron
+          cd electron
+          npm install
+          rm -rf node_modules/@types/minimatch
+          npx tsc --skipLibCheck
+          node -e 'const fs = require("fs"); const pkg = JSON.parse(fs.readFileSync("package.json", "utf8")); pkg.author = "Jellybo Team"; pkg.description = "Bubblebox App"; pkg.main = "dist/index.js"; pkg.build = pkg.build || {}; pkg.build.files = ["dist/**/*", "app/**/*", "assets/**/*", "package.json"]; fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));'
+          npx electron-builder build --linux deb --arm64
+      - name: Upload DEB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bubblebox-DEB
+          path: electron/dist/*.deb
