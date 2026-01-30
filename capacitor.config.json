@@ -1,0 +1,6 @@
+{
+  "appId": "com.jellybo.bubblebox",
+  "appName": "Bubblebox",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}

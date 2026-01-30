@@ -1,5 +1,5 @@
 
-name: Build Bubblebox Android APK
+name: Build Bubblebox Multiplatform
 on:
   push:
     branches: [ main ]
@@ -22,26 +22,26 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: Install and Build Web App for Capacitor
+      - name: Install, Sync, and Build Android APK
+        shell: bash
         run: |
           npm install
-          # Ensure the target 'www' directory exists
-          mkdir -p www 
-          # Attempt to build directly into 'www', which is Capacitor's default
-          npm run build -- --outDir=www || npm run build
-          # If a 'dist' folder was created as a fallback, copy its contents to 'www'
-          if [ -d "dist" ]; then
-            echo "Copying build from 'dist' to 'www'..."
-            cp -r dist/* www/
-          fi
-
-      - name: Build Android (APK)
-        run: |
-          # Sync web assets with the native Android project
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const wwwDir = 'www';
+            const assetsDir = 'assets';
+            const filesToCopy = ['index.html', 'main.js', 'style.css'];
+            if (!fs.existsSync(wwwDir)) fs.mkdirSync(wwwDir, { recursive: true });
+            filesToCopy.forEach(file => {
+              if (fs.existsSync(file)) fs.copyFileSync(file, path.join(wwwDir, file));
+            });
+            if (fs.existsSync(assetsDir)) {
+              fs.cpSync(assetsDir, path.join(wwwDir, assetsDir), { recursive: true });
+            }
+          "
           npx cap sync android
           cd android
-          
-          # Apply critical fix for Kotlin standard library conflicts
           cat <<EOT > extras.gradle
           allprojects {
               configurations.all {
@@ -53,16 +53,12 @@ jobs:
               }
           }
           EOT
-          sed -i "1i apply from: 'extras.gradle'" build.gradle
-
-          # Apply other essential Gradle configurations
+          sed -i "1i apply from: './extras.gradle'" build.gradle
           echo "android.useAndroidX=true" > gradle.properties
           echo "android.enableJetifier=false" >> gradle.properties
           echo "org.gradle.dependency.verification=off" >> gradle.properties
           echo "org.gradle.jvmargs=-Xmx2048m" >> gradle.properties
           sed -i 's/gradle-.*-all.zip/gradle-8.5-all.zip/g' gradle/wrapper/gradle-wrapper.properties
-
-          # Clean and build the APK
           chmod +x gradlew
           ./gradlew clean assembleDebug --no-daemon
 
@@ -71,3 +67,65 @@ jobs:
         with:
           name: Bubblebox-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  build-fedora:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies and Prepare Web Assets
+        shell: bash
+        run: |
+          npm install
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const wwwDir = 'www';
+            const assetsDir = 'assets';
+            const filesToCopy = ['index.html', 'main.js', 'style.css'];
+            if (!fs.existsSync(wwwDir)) fs.mkdirSync(wwwDir, { recursive: true });
+            filesToCopy.forEach(file => {
+              if (fs.existsSync(file)) fs.copyFileSync(file, path.join(wwwDir, file));
+            });
+            if (fs.existsSync(assetsDir)) {
+              fs.cpSync(assetsDir, path.join(wwwDir, assetsDir), { recursive: true });
+            }
+          "
+
+      - name: Build Fedora (RPM)
+        shell: bash
+        run: |
+          npx cap sync @capacitor-community/electron
+          cd electron
+          npm install
+          npx tsc --skipLibCheck
+          cat <<'EOF' > update-package.js
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.author = 'Jellybo Team';
+          pkg.description = 'Bubblebox App';
+          pkg.main = 'dist/index.js';
+          pkg.build = pkg.build || {};
+          pkg.build.files = ['dist/**/', 'app/**/', 'assets/**/', 'package.json'];
+          if (pkg.build.rpm) {
+              pkg.build.rpm.synopsis = 'Bubblebox Multiplatform';
+              delete pkg.build.rpm.summary;
+              delete pkg.build.rpm.architecture;
+          }
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          console.log('package.json updated for electron-builder!');
+          EOF
+          node update-package.js
+          npx electron-builder build --linux rpm --arm64
+
+      - name: Upload RPM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bubblebox-RPM
+          path: electron/dist/*.rpm
