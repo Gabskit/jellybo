@@ -1,11 +1,11 @@
 
-name: Build Bubblebox Multiplatform
+name: Build Bubblebox Android APK
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build-android:
+  build-apk:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -22,38 +22,52 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: Install Root Dependencies
-        run: npm install
-
-      - name: Build Android
+      - name: Install and Build Web App for Capacitor
         run: |
+          npm install
+          # Ensure the target 'www' directory exists
+          mkdir -p www 
+          # Attempt to build directly into 'www', which is Capacitor's default
+          npm run build -- --outDir=www || npm run build
+          # If a 'dist' folder was created as a fallback, copy its contents to 'www'
+          if [ -d "dist" ]; then
+            echo "Copying build from 'dist' to 'www'..."
+            cp -r dist/* www/
+          fi
+
+      - name: Build Android (APK)
+        run: |
+          # Sync web assets with the native Android project
           npx cap sync android
           cd android
-          cat <<EOT > fix-dependencies.gradle
+          
+          # Apply critical fix for Kotlin standard library conflicts
+          cat <<EOT > extras.gradle
           allprojects {
               configurations.all {
                   resolutionStrategy {
-                      force "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"
+                      force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
                   }
                   exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
                   exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
               }
           }
           EOT
-          sed -i "1i apply from: 'fix-dependencies.gradle'" build.gradle
+          sed -i "1i apply from: 'extras.gradle'" build.gradle
+
+          # Apply other essential Gradle configurations
           echo "android.useAndroidX=true" > gradle.properties
           echo "android.enableJetifier=false" >> gradle.properties
           echo "org.gradle.dependency.verification=off" >> gradle.properties
           echo "org.gradle.jvmargs=-Xmx2048m" >> gradle.properties
-          [ -f variables.gradle ] && sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' variables.gradle || true
-          [ -f variables.gradle ] && sed -i 's/targetSdkVersion = .*/targetSdkVersion = 35/g' variables.gradle || true
           sed -i 's/gradle-.*-all.zip/gradle-8.5-all.zip/g' gradle/wrapper/gradle-wrapper.properties
+
+          # Clean and build the APK
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
-      - name: Upload Artifacts
+          ./gradlew clean assembleDebug --no-daemon
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Bubblebox-Packages
-          path: |
-            android/app/build/outputs/apk/debug/app-debug.apk
-            electron/dist/*.rpm
+          name: Bubblebox-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
