@@ -8,7 +8,12 @@
   "devDependencies": {
     "electron": "latest",
     "electron-builder": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "electron-unhandled": "latest",
+    "electron-updater": "latest",
+    "chokidar": "latest",
+    "electron-serve": "latest",
+    "electron-window-state": "latest"
   },
   "build": {
     "appId": "com.polar.jellybo",

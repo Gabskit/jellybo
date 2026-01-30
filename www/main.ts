@@ -5,6 +5,7 @@ var ww: number = window.innerWidth;
 var wh: number = window.innerHeight;
 
 // TypeScript declarations for libraries
+declare var $: any; // Declaration for jQuery
 declare var Alpine: any;
 declare var Stage: any;
 declare var mode: any;
