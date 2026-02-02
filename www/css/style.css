@@ -50,14 +50,19 @@ html {
 }
 
 .espacial {
-    background: linear-gradient(#000, #122) padding-box, linear-gradient(80deg, #000, #0fb) border-box;
+    background: linear-gradient(80deg, #000, #0fb) border-box;
     border: 2px solid transparent;
     color: #fff !important;
     corner-shape: squircle;
     border-radius: 30px;
 }
 .panel-1{
-    background: linear-gradient(#0a3, #0aa);
+    background: linear-gradient(#0a2, #444) padding-box,
+     linear-gradient(75deg, #0ae, #0fb) border-box;
+    border: 2px solid transparent;
+    corner-shape: squircle;
+    border-radius: 20px;
+    padding: 0.2em;
 }
 .blue-h1 {
     color: #0c7aed;
