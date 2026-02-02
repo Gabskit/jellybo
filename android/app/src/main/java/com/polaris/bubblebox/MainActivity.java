@@ -1,4 +1,4 @@
-package com.polar.jellybo;
+package com.polaris.bubblebox;
 
 import com.getcapacitor.BridgeActivity;
 

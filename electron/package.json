@@ -1,9 +1,16 @@
 {
-  "name": "jellybo",
+  "name": "bubblebox",
   "version": "1.0.0",
+  "description": "Bubblebox Game",
+  "main": "dist/src/index.js",
+  "homepage": "https://bubblebox.game",
+  "author": {
+    "name": "Polaris",
+    "email": "polaris@example.com"
+  },
   "scripts": {
     "build": "tsc",
-    "build:linux": "electron-builder build --linux rpm --arm64"
+    "build:linux": "npm run build && nix-shell -p libxcrypt-compat --run \"electron-builder build --linux rpm --arm64\""
   },
   "devDependencies": {
     "electron": "latest",
@@ -16,17 +23,26 @@
     "electron-window-state": "latest"
   },
   "build": {
-    "appId": "com.polar.jellybo",
+    "appId": "com.polaris.bubblebox",
     "productName": "Bubblebox",
+    "files": [
+      "dist/src/**/*",
+      "node_modules/**/*",
+      {
+        "from": "../www",
+        "to": "www"
+      }
+    ],
     "linux": {
       "target": [
         "rpm"
       ],
+      "maintainer": "polaris@example.com",
       "category": "Game",
-      "icon": "assets/Bubble_icon.png"
+      "icon": "www/assets/Bubble_icon.png"
     },
     "rpm": {
-      "summary": "Jellybo Game para Plasma Mobile"
+      "synopsis": "Bubblebox Game for Plasma Mobile"
     }
   }
 }

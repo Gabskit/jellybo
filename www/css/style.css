@@ -56,7 +56,9 @@ html {
     corner-shape: squircle;
     border-radius: 30px;
 }
-
+.panel-1{
+    background: linear-gradient(#0a3, #0aa);
+}
 .blue-h1 {
     color: #0c7aed;
     font-size: 24px;

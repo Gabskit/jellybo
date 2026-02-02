@@ -14,14 +14,14 @@ import { join } from 'path';
 
 // Define components for a watcher to detect when the webapp is changed so we can reload in Dev mode.
 const reloadWatcher = {
-  debouncer: null,
+  debouncer: null as NodeJS.Timeout | null,
   ready: false,
-  watcher: null,
+  watcher: null as chokidar.FSWatcher | null,
 };
 export function setupReloadWatcher(electronCapacitorApp: ElectronCapacitorApp): void {
   reloadWatcher.watcher = chokidar
     .watch(join(app.getAppPath(), 'app'), {
-      ignored: /[/\\]\./,
+      ignored: /[/\\.]/,
       persistent: true,
     })
     .on('ready', () => {
@@ -29,11 +29,15 @@ export function setupReloadWatcher(electronCapacitorApp: ElectronCapacitorApp): 
     })
     .on('all', (_event, _path) => {
       if (reloadWatcher.ready) {
-        clearTimeout(reloadWatcher.debouncer);
-        reloadWatcher.debouncer = setTimeout(async () => {
-          electronCapacitorApp.getMainWindow().webContents.reload();
-          reloadWatcher.ready = false;
+        if (reloadWatcher.debouncer) {
           clearTimeout(reloadWatcher.debouncer);
+        }
+        reloadWatcher.debouncer = setTimeout(async () => {
+          electronCapacitorApp.getMainWindow()?.webContents.reload();
+          reloadWatcher.ready = false;
+          if (reloadWatcher.debouncer) {
+            clearTimeout(reloadWatcher.debouncer);
+          }
           reloadWatcher.debouncer = null;
           reloadWatcher.watcher = null;
           setupReloadWatcher(electronCapacitorApp);
@@ -55,7 +59,7 @@ export class ElectronCapacitorApp {
     { role: process.platform === 'darwin' ? 'appMenu' : 'fileMenu' },
     { role: 'viewMenu' },
   ];
-  private mainWindowState;
+  private mainWindowState: any;
   private loadWebApp;
   private customScheme: string;
 
@@ -78,18 +82,20 @@ export class ElectronCapacitorApp {
 
     // Setup our web app loader, this lets us load apps like react, vue, and angular without changing their build chains.
     this.loadWebApp = electronServe({
-      directory: join(app.getAppPath(), 'app'),
+      directory: join(app.getAppPath(), 'dist', 'www'),
       scheme: this.customScheme,
     });
   }
 
   // Helper function to load in the app.
-  private async loadMainWindow(thisRef: any) {
-    await thisRef.loadWebApp(thisRef.MainWindow);
+  private async loadMainWindow(thisRef: ElectronCapacitorApp) {
+    if(thisRef.MainWindow) {
+      await thisRef.loadWebApp(thisRef.MainWindow);
+    }
   }
 
   // Expose the mainWindow ref for use outside of the class.
-  getMainWindow(): BrowserWindow {
+  getMainWindow(): BrowserWindow | null {
     return this.MainWindow;
   }
 
@@ -99,14 +105,14 @@ export class ElectronCapacitorApp {
 
   async init(): Promise<void> {
     const icon = nativeImage.createFromPath(
-      join(app.getAppPath(), 'assets', process.platform === 'win32' ? 'appIcon.ico' : 'appIcon.png')
+      join(app.getAppPath(), 'dist', 'www', 'assets', process.platform === 'win32' ? 'appIcon.ico' : 'appIcon.png')
     );
     this.mainWindowState = windowStateKeeper({
       defaultWidth: 1000,
       defaultHeight: 800,
     });
     // Setup preload script path and construct our main window.
-    const preloadPath = join(app.getAppPath(), 'build', 'src', 'preload.js');
+    const preloadPath = join(__dirname, 'preload.js');
     this.MainWindow = new BrowserWindow({
       icon,
       show: false,
@@ -118,13 +124,12 @@ export class ElectronCapacitorApp {
         nodeIntegration: true,
         contextIsolation: true,
         // Use preload to inject the electron varriant overrides for capacitor plugins.
-        // preload: join(app.getAppPath(), "node_modules", "@capacitor-community", "electron", "dist", "runtime", "electron-rt.js"),
         preload: preloadPath,
       },
     });
     this.mainWindowState.manage(this.MainWindow);
 
-    if (this.CapacitorFileConfig.backgroundColor) {
+    if (this.CapacitorFileConfig.electron?.backgroundColor && this.MainWindow) {
       this.MainWindow.setBackgroundColor(this.CapacitorFileConfig.electron.backgroundColor);
     }
 
@@ -170,6 +175,8 @@ export class ElectronCapacitorApp {
       this.SplashScreen = new CapacitorSplashScreen({
         imageFilePath: join(
           app.getAppPath(),
+          'dist',
+          'www',
           'assets',
           this.CapacitorFileConfig.electron?.splashScreenImageName ?? 'splash.png'
         ),
@@ -181,38 +188,40 @@ export class ElectronCapacitorApp {
       this.loadMainWindow(this);
     }
 
-    // Security
-    this.MainWindow.webContents.setWindowOpenHandler((details) => {
-      if (!details.url.includes(this.customScheme)) {
-        return { action: 'deny' };
-      } else {
-        return { action: 'allow' };
-      }
-    });
-    this.MainWindow.webContents.on('will-navigate', (event, _newURL) => {
-      if (!this.MainWindow.webContents.getURL().includes(this.customScheme)) {
-        event.preventDefault();
-      }
-    });
-
-    // Link electron plugins into the system.
-    setupCapacitorElectronPlugins();
-
-    // When the web app is loaded we hide the splashscreen if needed and show the mainwindow.
-    this.MainWindow.webContents.on('dom-ready', () => {
-      if (this.CapacitorFileConfig.electron?.splashScreenEnabled) {
-        this.SplashScreen.getSplashWindow().hide();
-      }
-      if (!this.CapacitorFileConfig.electron?.hideMainWindowOnLaunch) {
-        this.MainWindow.show();
-      }
-      setTimeout(() => {
-        if (electronIsDev) {
-          this.MainWindow.webContents.openDevTools();
+    if(this.MainWindow) {
+      // Security
+      this.MainWindow.webContents.setWindowOpenHandler((details) => {
+        if (!details.url.includes(this.customScheme)) {
+          return { action: 'deny' };
+        } else {
+          return { action: 'allow' };
         }
-        CapElectronEventEmitter.emit('CAPELECTRON_DeeplinkListenerInitialized', '');
-      }, 400);
-    });
+      });
+      this.MainWindow.webContents.on('will-navigate', (event, _newURL) => {
+        if (!this.MainWindow?.webContents.getURL().includes(this.customScheme)) {
+          event.preventDefault();
+        }
+      });
+  
+      // Link electron plugins into the system.
+      setupCapacitorElectronPlugins();
+  
+      // When the web app is loaded we hide the splashscreen if needed and show the mainwindow.
+      this.MainWindow.webContents.on('dom-ready', () => {
+        if (this.CapacitorFileConfig.electron?.splashScreenEnabled) {
+          this.SplashScreen?.getSplashWindow().hide();
+        }
+        if (!this.CapacitorFileConfig.electron?.hideMainWindowOnLaunch) {
+          this.MainWindow?.show();
+        }
+        setTimeout(() => {
+          if (electronIsDev) {
+            this.MainWindow?.webContents.openDevTools();
+          }
+          CapElectronEventEmitter.emit('CAPELECTRON_DeeplinkListenerInitialized', '');
+        }, 400);
+      });
+    }
   }
 }
 

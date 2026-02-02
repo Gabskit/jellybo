@@ -7,14 +7,16 @@
   packages = [
     pkgs.nodejs_20
     pkgs.python3
+    pkgs.android-tools
+    pkgs.android-studio
   ];
   # Sets environment variables in the workspace
   env = {};
   idx = {
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [
-      # "vscodevim.vim"
-      "google.gemini-cli-vscode-ide-companion"
+      "vscodevim.vim"
+      # "google.gemini-cli-vscode-ide-companion"
     ];
     # Enable previews and customize configuration
     previews = {
