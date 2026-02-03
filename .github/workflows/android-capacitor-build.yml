@@ -131,46 +131,4 @@ jobs:
         with:
           name: app-debug-apk
           path: android/app/build/outputs/**/*.apk
-  build-electron:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Cache npm
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-
-      - name: Compile TypeScript
-        run: npx tsc
-
-      - name: Sync Capacitor Electron
-        run: npx cap sync electron
-
-      - name: Build Electron App
-        working-directory: electron
-        run: |
-          npm install --no-audit --no-fund
-          npm run build
-
-      - name: Build Electron AppImage
-        working-directory: electron
-        run: npx electron-builder build --linux AppImage
-
-      - name: Upload Electron AppImage
-        uses: actions/upload-artifact@v4
-        with:
-          name: bubblebox-appimage
-          path: electron/dist/*.AppImage
+  # end of jobs
