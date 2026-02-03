@@ -26,6 +26,7 @@ body {
 *,
 html {
     transition: all 0.2s ease-in !important;
+    
 }
 .bar{
     display: flex;
@@ -33,8 +34,9 @@ html {
     justify-content: space-around;
     align-items: center;
     padding: 0.4em;
-    
+    width: 100%;
 }
+
 /* Ensure the main content area fills the available space */
 .canva-conta{
     padding: 0;

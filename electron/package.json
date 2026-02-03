@@ -1,48 +1,41 @@
 {
   "name": "bubblebox",
   "version": "1.0.0",
-  "description": "Bubblebox Game",
-  "main": "dist/src/index.js",
-  "homepage": "https://bubblebox.game",
+  "description": "An Amazing Capacitor App",
   "author": {
-    "name": "Polaris",
-    "email": "polaris@example.com"
+    "name": "",
+    "email": ""
   },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "license": "MIT",
+  "main": "build/src/index.js",
   "scripts": {
-    "build": "tsc",
-    "build:linux": "npm run build && nix-shell -p libxcrypt-compat --run \"electron-builder build --linux rpm --arm64\""
+    "build": "tsc && electron-rebuild",
+    "electron:start-live": "node ./live-runner.js",
+    "electron:start": "npm run build && electron --inspect=5858 ./",
+    "electron:pack": "npm run build && electron-builder build --dir -c ./electron-builder.config.json",
+    "electron:make": "npm run build && electron-builder build -c ./electron-builder.config.json -p always"
+  },
+  "dependencies": {
+    "@capacitor-community/electron": "^5.0.0",
+    "chokidar": "~3.5.3",
+    "electron-is-dev": "~2.0.0",
+    "electron-serve": "~1.1.0",
+    "electron-unhandled": "~4.0.1",
+    "electron-updater": "^5.3.0",
+    "electron-window-state": "^5.0.3"
   },
   "devDependencies": {
-    "electron": "latest",
-    "electron-builder": "latest",
-    "typescript": "latest",
-    "electron-unhandled": "latest",
-    "electron-updater": "latest",
-    "chokidar": "latest",
-    "electron-serve": "latest",
-    "electron-window-state": "latest"
+    "electron": "^26.2.2",
+    "electron-builder": "~23.6.0",
+    "electron-rebuild": "^3.2.9",
+    "typescript": "^5.0.4"
   },
-  "build": {
-    "appId": "com.polaris.bubblebox",
-    "productName": "Bubblebox",
-    "files": [
-      "dist/src/**/*",
-      "node_modules/**/*",
-      {
-        "from": "../www",
-        "to": "www"
-      }
-    ],
-    "linux": {
-      "target": [
-        "rpm"
-      ],
-      "maintainer": "polaris@example.com",
-      "category": "Game",
-      "icon": "www/assets/Bubble_icon.png"
-    },
-    "rpm": {
-      "synopsis": "Bubblebox Game for Plasma Mobile"
-    }
-  }
+  "keywords": [
+    "capacitor",
+    "electron"
+  ]
 }

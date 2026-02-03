@@ -22,6 +22,9 @@
     "generate-mipmaps": "node ./scripts/generate-mipmaps.js",
     "start": "http-server www -c-1",
     "dev": "concurrently \"npm start\" \"npx cap run android --livereload\"",
-    "emulate:android": "npx cap run android"
+    "dev:electron": "concurrently \"npm start\" \"npx cap run electron --livereload\"",
+    "emulate:android": "npx cap run android",
+    "electron": "npx cap run electron",
+    "build:electron": "cd electron && npm run build"
   }
 }

@@ -1,5 +1,6 @@
 {
-  "appId": "com.yourdoamnin.yourapp",
+  "appId": "com.polaris.bubblebox",
+  "productName": "bubblebox",
   "directories": {
     "buildResources": "resources"
   },
@@ -19,10 +20,15 @@
   },
   "win": {
     "target": "nsis",
-    "icon": "assets/appIcon.ico"
+    "icon": "app/assets/Bubble_icon.png"
   },
   "mac": {
-    "category": "your.app.category.type",
-    "target": "dmg"
+    "category": "public.app-category.utilities",
+    "target": "dmg",
+    "icon": "app/assets/Bubble_icon.png"
+  },
+  "linux": {
+    "target": "AppImage",
+    "icon": "app/assets/Bubble_icon.png"
   }
 }

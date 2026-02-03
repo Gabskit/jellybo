@@ -4,7 +4,12 @@ const config: CapacitorConfig = {
   appId: 'com.polaris.bubblebox',
   appName: 'bubblebox',
   webDir: 'www',
-  //bundleWebRuntime: false
+  plugins: {
+    Electron: {
+      deepLinkingEnabled: false,
+      splashScreenSpinnerStyle: 'large',
+    }
+  }
 };
 
 export default config;

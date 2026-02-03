@@ -1,11 +1,15 @@
 {
+  "compileOnSave": true,
+  "include": ["./src/**/*", "./capacitor.config.ts", "./capacitor.config.js"],
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
-    "outDir": "./dist",
-    "strict": true,
+    "outDir": "./build",
+    "importHelpers": true,
+    "target": "ES2017",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "typeRoots": ["./node_modules/@types"],
+    "allowJs": true,
+    "rootDir": "."
   }
 }
