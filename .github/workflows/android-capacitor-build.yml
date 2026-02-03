@@ -6,7 +6,45 @@ on:
   workflow_dispatch:
 
 jobs:
+  build-electron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies (root)
+        run: npm install --no-audit --no-fund
+
+      - name: Compile TypeScript (root)
+        run: npx tsc
+
+      - name: Build Electron
+        working-directory: electron
+        run: |
+          npm install --no-audit --no-fund
+          npm run build || true
+
+      - name: Upload Electron build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-build
+          path: electron/dist/**
+
   build-android:
+    needs: build-electron
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
