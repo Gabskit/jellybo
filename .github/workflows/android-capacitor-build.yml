@@ -41,7 +41,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: electron-build
-          path: electron/dist/**
+          path: |
+            electron/dist/**
+            electron/build/**
+            electron/out/**
+            electron/**/dist/**
 
   build-android:
     needs: build-electron
