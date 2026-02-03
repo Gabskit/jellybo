@@ -125,10 +125,11 @@ jobs:
           ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tee ../build-android.log || (cat ../build-android.log && false)
 
       - name: Upload Android build log
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: android-build-log
-          path: android/../build-android.log
+          path: build-android.log
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
