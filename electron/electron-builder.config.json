@@ -20,12 +20,12 @@
   },
   "win": {
     "target": "nsis",
-    "icon": "app/assets/Bubble_icon.png"
+    "icon": "app/assets/Bubble_icon.svg"
   },
   "mac": {
     "category": "public.app-category.utilities",
     "target": "dmg",
-    "icon": "app/assets/Bubble_icon.png"
+    "icon": "app/assets/Bubble_icon.svg"
   },
   "linux": {
     "target": "AppImage",
