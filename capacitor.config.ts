@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.polar.jellybo',
-  appName: 'www',
+  appId: 'com.polaris.bubblebox',
+  appName: 'bubblebox',
   webDir: 'www',
   //bundleWebRuntime: false
 };

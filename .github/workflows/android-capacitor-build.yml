@@ -26,7 +26,15 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
+
+      - name: Generate Android mipmaps
+        run: |
+          if [ -f ./scripts/generate-mipmaps.js ]; then
+            npm run generate-mipmaps || true
+          else
+            echo "No generate-mipmaps script found, skipping"
+          fi
 
       - name: Optional web build
         run: npm run build || true

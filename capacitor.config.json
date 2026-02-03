@@ -1,6 +1,6 @@
 {
   "appId": "com.polaris.bubblebox",
-  "appName": "Bubblebox",
+  "appName": "bubblebox",
   "webDir": "www",
   "bundledWebRuntime": false
 }

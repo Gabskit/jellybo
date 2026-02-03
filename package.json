@@ -15,9 +15,11 @@
     "@types/node": "^25.1.0",
     "concurrently": "^8.2.2",
     "http-server": "^14.1.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@resvg/resvg-js": "^2.2.0"
   },
   "scripts": {
+    "generate-mipmaps": "node ./scripts/generate-mipmaps.js",
     "start": "http-server www -c-1",
     "dev": "concurrently \"npm start\" \"npx cap run android --livereload\"",
     "emulate:android": "npx cap run android"

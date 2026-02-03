@@ -32,6 +32,8 @@ html {
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
+    padding: 0.4em;
+    
 }
 /* Ensure the main content area fills the available space */
 .canva-conta{
