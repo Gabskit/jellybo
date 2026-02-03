@@ -107,7 +107,24 @@ jobs:
 
       - name: Build Android (debug)
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          set -eux
+          echo "--- Environment ---"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          env | sort
+          echo "--- Gradle version ---"
+          ./gradlew -v
+          echo "--- Listing android dir ---"
+          ls -la
+          echo "--- Building (stacktrace + info) ---"
+          ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tee ../build-android.log || (cat ../build-android.log && false)
+
+      - name: Upload Android build log
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-log
+          path: android/../build-android.log
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
