@@ -107,3 +107,29 @@ jobs:
         with:
           name: Bubblebox-RPM
           path: electron/dist/*.rpm
+  build-electron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install and Build Electron (Linux AppImage)
+        shell: bash
+        run: |
+          npm install
+          npx tsc
+          npx cap copy electron
+          cd electron
+          npm install
+          npx electron-builder build --linux AppImage
+
+      - name: Upload Electron AppImage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bubblebox-Linux-AppImage
+          path: electron/dist/*.AppImage
